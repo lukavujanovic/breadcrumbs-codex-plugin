@@ -22,7 +22,7 @@ launchctl setenv BREADCRUMBS_MCP_TOKEN "bc_<your_project_api_key>"
 Add this marketplace to Codex:
 
 ```zsh
-codex plugin marketplace add xie-andy/breadcrumbs-codex-plugin
+codex plugin marketplace add lukavujanovic/breadcrumbs-codex-plugin
 ```
 
 Then restart Codex and enable `Breadcrumbs MCP` from the plugin UI.
