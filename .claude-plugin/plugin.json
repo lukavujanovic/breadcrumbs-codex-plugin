@@ -16,39 +16,6 @@
     "project-management",
     "feature-flow"
   ],
-  "mcp_servers": [
-    {
-      "name": "breadcrumbs-mcp",
-      "type": "http",
-      "url": "https://breadcrumbs.dev/mcp",
-      "headers": {
-        "Authorization": "Bearer ${BREADCRUMBS_MCP_TOKEN}"
-      }
-    }
-  ],
-  "skills": [
-    "skills/feature-lifecycle"
-  ],
-  "interface": {
-    "displayName": "Breadcrumbs MCP",
-    "shortDescription": "Use Breadcrumbs project context, kanban, notes, docs, and logs from Claude Code",
-    "longDescription": "Breadcrumbs MCP connects Claude Code to a Breadcrumbs project so agents can read project context, inspect and update the kanban board, add card notes, write documentation pages, and post coding log entries during feature work.",
-    "developerName": "The Little Leagues",
-    "category": "Productivity",
-    "capabilities": [
-      "Read",
-      "Write",
-      "Project Management"
-    ],
-    "websiteURL": "https://breadcrumbs.dev",
-    "privacyPolicyURL": "https://breadcrumbs.dev",
-    "termsOfServiceURL": "https://breadcrumbs.dev",
-    "defaultPrompt": [
-      "Start work on the selected Breadcrumbs card",
-      "Log this feature's implementation progress",
-      "Finish the feature and update Breadcrumbs"
-    ],
-    "brandColor": "#2563EB",
-    "screenshots": []
-  }
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
 }

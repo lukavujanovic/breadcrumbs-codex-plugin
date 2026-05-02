@@ -1,0 +1,14 @@
+{
+  "name": "breadcrumbs-mcp",
+  "owner": {
+    "name": "The Little Leagues",
+    "url": "https://breadcrumbs.dev"
+  },
+  "plugins": [
+    {
+      "name": "breadcrumbs-mcp",
+      "description": "Connect Claude Code to Breadcrumbs via MCP — project board, kanban, notes, docs, and coding log.",
+      "source": "./"
+    }
+  ]
+}
