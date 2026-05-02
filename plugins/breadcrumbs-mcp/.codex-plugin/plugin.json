@@ -1,0 +1,43 @@
+{
+  "name": "breadcrumbs-mcp",
+  "version": "0.1.0",
+  "description": "Connect Codex to Breadcrumbs via MCP and guide feature lifecycle updates through the project board, notes, docs, and coding log.",
+  "author": {
+    "name": "The Little Leagues",
+    "url": "https://breadcrumbs.dev"
+  },
+  "homepage": "https://breadcrumbs.dev",
+  "repository": "https://breadcrumbs.dev",
+  "license": "MIT",
+  "keywords": [
+    "breadcrumbs",
+    "mcp",
+    "kanban",
+    "project-management",
+    "feature-flow"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Breadcrumbs MCP",
+    "shortDescription": "Use Breadcrumbs project context, kanban, notes, docs, and logs from Codex",
+    "longDescription": "Breadcrumbs MCP connects Codex to a Breadcrumbs project so agents can read project context, inspect and update the kanban board, add card notes, write documentation pages, and post coding log entries during feature work.",
+    "developerName": "The Little Leagues",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Project Management"
+    ],
+    "websiteURL": "https://breadcrumbs.dev",
+    "privacyPolicyURL": "https://breadcrumbs.dev",
+    "termsOfServiceURL": "https://breadcrumbs.dev",
+    "defaultPrompt": [
+      "Start work on the selected Breadcrumbs card",
+      "Log this feature's implementation progress",
+      "Finish the feature and update Breadcrumbs"
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}
