@@ -4,7 +4,7 @@ This plugin connects Codex to a Breadcrumbs project through the Breadcrumbs MCP 
 
 ## MCP Configuration
 
-The bundled `.mcp.json` targets production:
+The bundled `.mcp.json` targets the hosted Breadcrumbs MCP endpoint:
 
 ```json
 {
@@ -17,23 +17,7 @@ The bundled `.mcp.json` targets production:
 }
 ```
 
-Set the token in the macOS GUI environment before launching Codex:
-
-```zsh
-launchctl setenv BREADCRUMBS_MCP_TOKEN "bc_<your_project_api_key>"
-```
-
-For local development, change the URL to:
-
-```text
-http://localhost:8080/mcp
-```
-
-and use a local token environment variable such as:
-
-```text
-BREADCRUMBS_MCP_TOKEN_LOCAL
-```
+No bearer token is stored in this plugin. Codex reads the token from `BREADCRUMBS_MCP_TOKEN` in the user's environment.
 
 ## Included Skill
 

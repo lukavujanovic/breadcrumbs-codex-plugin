@@ -1,50 +1,47 @@
 # Breadcrumbs Codex Plugin
 
-Install Breadcrumbs in Codex with a bundled MCP server configuration and a feature lifecycle skill.
+Breadcrumbs MCP connects Codex to a Breadcrumbs project so agents can use the project board, Coding Log, card notes, and documentation while working on features.
 
-## What This Includes
+## What It Provides
 
-- `plugins/breadcrumbs-mcp/.codex-plugin/plugin.json`: Codex plugin metadata.
-- `plugins/breadcrumbs-mcp/.mcp.json`: MCP configuration for `https://breadcrumbs.dev/mcp`.
-- `plugins/breadcrumbs-mcp/skills/feature-lifecycle/SKILL.md`: instructions for agents starting, updating, and finishing feature work.
-- `.agents/plugins/marketplace.json`: repo marketplace catalog so Codex can discover the plugin.
+- A Codex plugin manifest for `breadcrumbs-mcp`.
+- A Streamable HTTP MCP configuration for `https://breadcrumbs.dev/mcp`.
+- A `feature-lifecycle` skill that guides agents through starting, updating, and finishing feature work in Breadcrumbs.
+- A Codex marketplace catalog at `.agents/plugins/marketplace.json`.
 
-No API keys or bearer tokens are stored in this repo. The MCP config only references an environment variable name.
-
-## Install
-
-Set your Breadcrumbs project API key in your macOS login environment:
-
-```zsh
-launchctl setenv BREADCRUMBS_MCP_TOKEN "bc_<your_project_api_key>"
-```
-
-Add this marketplace to Codex:
-
-```zsh
-codex plugin marketplace add lukavujanovic/breadcrumbs-codex-plugin
-```
-
-Then restart Codex and enable `Breadcrumbs MCP` from the plugin UI.
-
-## Direct MCP Install
-
-If you only want the MCP tools and do not need the feature lifecycle skill:
-
-```zsh
-launchctl setenv BREADCRUMBS_MCP_TOKEN "bc_<your_project_api_key>"
-
-codex mcp add breadcrumbs-mcp \
-  --url https://breadcrumbs.dev/mcp \
-  --bearer-token-env-var BREADCRUMBS_MCP_TOKEN
-```
-
-## Verify
-
-After installing, ask Codex:
+## Repository Layout
 
 ```text
-Use Breadcrumbs to show the project overview.
+.agents/plugins/marketplace.json
+plugins/breadcrumbs-mcp/.codex-plugin/plugin.json
+plugins/breadcrumbs-mcp/.mcp.json
+plugins/breadcrumbs-mcp/README.md
+plugins/breadcrumbs-mcp/skills/feature-lifecycle/SKILL.md
 ```
 
-Codex should be able to call Breadcrumbs MCP tools such as `get_project_overview`, `get_kanban_board`, `update_card`, `add_note`, `write_documentation`, and `log_activity`.
+## Security
+
+This repository does not include API keys, bearer tokens, `.env` files, or user project data.
+
+The bundled MCP config references the environment variable `BREADCRUMBS_MCP_TOKEN`; the token value is supplied by the user's local Codex environment.
+
+## MCP Tools
+
+The Breadcrumbs MCP server exposes tools for:
+
+- reading project overview and documentation summaries;
+- reading the full kanban board;
+- moving or editing kanban cards;
+- attaching notes to cards;
+- writing project documentation;
+- logging activity to the project Coding Log.
+
+## Agent Workflow
+
+The included skill asks agents to:
+
+- read Breadcrumbs context before starting feature work;
+- move the active card to `In Progress`;
+- log meaningful milestones, blockers, and verification results;
+- attach durable notes and documentation when useful;
+- move cards to `Review` or `Done` only after appropriate verification.
