@@ -7,16 +7,13 @@ Breadcrumbs MCP connects Codex to a Breadcrumbs project so agents can use the pr
 - A Codex plugin manifest for `breadcrumbs-mcp`.
 - A Streamable HTTP MCP configuration for `https://breadcrumbs.dev/mcp`.
 - A `feature-lifecycle` skill that guides agents through starting, updating, and finishing feature work in Breadcrumbs.
-- A Codex marketplace catalog at `.agents/plugins/marketplace.json`.
 
 ## Repository Layout
 
 ```text
-.agents/plugins/marketplace.json
-plugins/breadcrumbs-mcp/.codex-plugin/plugin.json
-plugins/breadcrumbs-mcp/.mcp.json
-plugins/breadcrumbs-mcp/README.md
-plugins/breadcrumbs-mcp/skills/feature-lifecycle/SKILL.md
+.codex-plugin/plugin.json
+.mcp.json
+skills/feature-lifecycle/SKILL.md
 ```
 
 ## Security
