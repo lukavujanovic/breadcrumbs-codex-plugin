@@ -1,26 +1,47 @@
-# Breadcrumbs Codex Plugin
+# Breadcrumbs Plugin
 
-Breadcrumbs MCP connects Codex to a Breadcrumbs project so agents can use the project board, Coding Log, card notes, and documentation while working on features.
+Breadcrumbs MCP connects coding agents — Codex and Claude Code — to a Breadcrumbs project so they can use the project board, Coding Log, card notes, and documentation while working on features.
 
 ## What It Provides
 
-- A Codex plugin manifest for `breadcrumbs-mcp`.
+- Plugin manifests for both Codex (`.codex-plugin/`) and Claude Code (`.claude-plugin/`).
 - A Streamable HTTP MCP configuration for `https://breadcrumbs.dev/mcp`.
 - A `feature-lifecycle` skill that guides agents through starting, updating, and finishing feature work in Breadcrumbs.
+
+## Install (Claude Code)
+
+In Claude Code, run:
+
+```
+/plugin marketplace add lukavujanovic/breadcrumbs-codex-plugin
+/plugin install breadcrumbs-mcp@breadcrumbs-mcp
+/reload-plugins
+```
+
+Then export your Breadcrumbs MCP token in the shell that launches Claude Code:
+
+```bash
+export BREADCRUMBS_MCP_TOKEN=your_token
+```
+
+To pull plugin updates later, re-run `/plugin install breadcrumbs-mcp@breadcrumbs-mcp` (the installer caches by `version`, so you'll only see updates after a version bump in this repo).
 
 ## Repository Layout
 
 ```text
-.codex-plugin/plugin.json
-.mcp.json
-skills/feature-lifecycle/SKILL.md
+.claude-plugin/marketplace.json   # Claude Code marketplace manifest
+.claude-plugin/plugin.json        # Claude Code plugin manifest → .mcp.json
+.codex-plugin/plugin.json         # Codex plugin manifest → .mcp.codex.json
+.mcp.json                         # Claude Code HTTP MCP config (type: http, headers)
+.mcp.codex.json                   # Codex HTTP MCP config (bearer_token_env_var)
+skills/feature-lifecycle/SKILL.md # Shared agent skill
 ```
 
 ## Security
 
 This repository does not include API keys, bearer tokens, `.env` files, or user project data.
 
-The bundled MCP config references the environment variable `BREADCRUMBS_MCP_TOKEN`; the token value is supplied by the user's local Codex environment.
+The bundled MCP configs reference the environment variable `BREADCRUMBS_MCP_TOKEN`; the token value is supplied from the user's local environment.
 
 ## MCP Tools
 

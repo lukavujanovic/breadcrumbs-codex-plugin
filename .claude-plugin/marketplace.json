@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "breadcrumbs-mcp",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Connect Claude Code to Breadcrumbs via MCP — project board, kanban, notes, docs, and coding log.",
       "source": "./"
     }

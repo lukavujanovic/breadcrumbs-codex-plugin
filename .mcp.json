@@ -1,11 +1,9 @@
 {
-  "mcpServers": {
-    "breadcrumbs-mcp": {
-      "type": "http",
-      "url": "https://breadcrumbs.dev/mcp",
-      "headers": {
-        "Authorization": "Bearer ${BREADCRUMBS_MCP_TOKEN}"
-      }
+  "breadcrumbs-mcp": {
+    "type": "http",
+    "url": "https://breadcrumbs.dev/mcp",
+    "headers": {
+      "Authorization": "Bearer ${BREADCRUMBS_MCP_TOKEN}"
     }
   }
 }
