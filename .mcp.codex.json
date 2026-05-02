@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "breadcrumbs-mcp": {
+      "url": "https://breadcrumbs.dev/mcp",
+      "bearer_token_env_var": "BREADCRUMBS_MCP_TOKEN"
+    }
+  }
+}

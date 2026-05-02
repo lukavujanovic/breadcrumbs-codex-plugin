@@ -17,7 +17,7 @@
     "feature-flow"
   ],
   "skills": "./skills/",
-  "mcpServers": "./.mcp.json",
+  "mcpServers": "./.mcp.codex.json",
   "interface": {
     "displayName": "Breadcrumbs MCP",
     "shortDescription": "Use Breadcrumbs project context, kanban, notes, docs, and logs from Codex",

@@ -17,5 +17,5 @@
     "feature-flow"
   ],
   "skills": "./skills/",
-  "mcpServers": "./.mcp.claude.json"
+  "mcpServers": "./.mcp.json"
 }
