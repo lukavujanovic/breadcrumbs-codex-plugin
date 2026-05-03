@@ -7,6 +7,27 @@ Breadcrumbs MCP connects coding agents — Codex and Claude Code — to a Breadc
 - Plugin manifests for both Codex (`.codex-plugin/`) and Claude Code (`.claude-plugin/`).
 - A Streamable HTTP MCP configuration for `https://breadcrumbs.dev/mcp`.
 - A `feature-lifecycle` skill that guides agents through starting, updating, and finishing feature work in Breadcrumbs.
+- Automatic Coding Log entries (Claude Code only — see below).
+
+## Auto-logging (Claude Code)
+
+When installed in Claude Code, the plugin automatically posts a short summary to your Breadcrumbs project's Coding Log every turn that the working tree of your current git repo changes. The entry contains the touched file paths, a `git diff --stat` summary, and any new commits — but **not** the diff contents (so credentials accidentally edited into a file don't end up in the log).
+
+Detection uses a snapshot of `git rev-parse HEAD` plus a hash of `git diff HEAD` and the untracked-file list, taken at the start of each turn (`UserPromptSubmit` hook) and compared at the end (`Stop` hook). This catches modifications made via the `Edit`/`Write` tools, the `Bash` tool, and even mid-turn `git commit`s.
+
+Requirements: `git`, `jq`, `curl`, and `shasum` on `PATH` (standard on macOS and most Linux distros).
+
+To opt out for a shell session:
+
+```bash
+export BREADCRUMBS_AUTOLOG_DISABLED=1
+```
+
+To point the auto-logger at a different MCP endpoint (e.g. self-hosted):
+
+```bash
+export BREADCRUMBS_MCP_URL=https://your-breadcrumbs.example.com/mcp
+```
 
 ## Install (Claude Code)
 
@@ -54,6 +75,10 @@ This plugin uses the Claude marketplace entry version for update detection. Main
 .mcp.json                         # Claude Code HTTP MCP config (type: http, headers)
 .mcp.codex.json                   # Codex HTTP MCP config (bearer_token_env_var)
 skills/feature-lifecycle/SKILL.md # Shared agent skill
+hooks/hooks.json                  # Claude Code hook config (UserPromptSubmit + Stop)
+hooks/snapshot_repo.sh            # Captures repo state at turn start
+hooks/log_on_stop.sh              # Diffs at turn end and triggers a log entry
+hooks/post_log.sh                 # POSTs log_activity to the MCP server
 ```
 
 ## Security
