@@ -1,6 +1,6 @@
 {
   "name": "breadcrumbs-mcp",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Connect Codex to Breadcrumbs via MCP and guide feature lifecycle updates through the project board, notes, docs, and coding log.",
   "author": {
     "name": "The Little Leagues",
