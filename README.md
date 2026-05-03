@@ -24,7 +24,26 @@ Then export your Breadcrumbs MCP token in the shell that launches Claude Code:
 export BREADCRUMBS_MCP_TOKEN=your_token
 ```
 
-To pull plugin updates later, re-run `/plugin install breadcrumbs-mcp@breadcrumbs-mcp` (the installer caches by `version`, so you'll only see updates after a version bump in this repo).
+## Update (Claude Code)
+
+For an existing installation, refresh the marketplace first, then update the installed plugin:
+
+```
+/plugin marketplace update breadcrumbs-mcp
+/plugin update breadcrumbs-mcp@breadcrumbs-mcp
+/reload-plugins
+```
+
+Terminal equivalent:
+
+```bash
+claude plugin marketplace update breadcrumbs-mcp
+claude plugin update breadcrumbs-mcp@breadcrumbs-mcp
+```
+
+Do not remove and re-add the marketplace just to update. Claude Code removes plugins installed from a marketplace when that marketplace is removed.
+
+This plugin uses the Claude marketplace entry version for update detection. Maintainers must bump `.claude-plugin/marketplace.json` whenever users should receive a new Claude plugin release.
 
 ## Repository Layout
 
