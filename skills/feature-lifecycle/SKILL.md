@@ -1,6 +1,6 @@
 ---
 name: feature-lifecycle
-description: Use when starting, continuing, pausing, reviewing, deleting, or finishing feature work in any project where Breadcrumbs MCP is available for project state. Guides an AI agent to use Breadcrumbs as the source of truth by reading project state, creating, updating, or deleting kanban cards, managing structured card plans and verification checklists, using unified project/card notes with full CRUD, moving cards through workflow columns, logging tagged activity, and safely reading, writing, or deleting durable project documentation.
+description: Use when starting, continuing, pausing, reviewing, deleting, or finishing feature work in any project where Breadcrumbs MCP is available for project state. Guides an AI agent to link the local repository to a Breadcrumbs project through .breadcrumbs/project.json, use user-scoped MCP authentication, pass explicit project_id values to project-scoped tools, and keep kanban cards, structured plans, verification checklists, unified notes, activity logs, and durable project documentation aligned.
 ---
 
 # Breadcrumbs Feature Lifecycle
@@ -13,9 +13,65 @@ Core planning rule: before beginning implementation on a card, create or update 
 
 Core notes rule: Breadcrumbs uses one unified notes model. Project notes and card-attached notes are the same resource type. A card note is a note associated with a `card_id`; a project note has no `card_id`. Use note CRUD tools for all note lifecycle work. Use `add_note` only as a compatibility shortcut for creating a card-attached note.
 
+Core auth rule: Breadcrumbs MCP authentication is user-scoped. A `bcu_...` API key identifies the user. It does not select a project. Never use, request, store, write, or infer project-scoped MCP keys. Never put API keys, tokens, passwords, or other secrets in repository files.
+
+Core project-linking rule: project selection comes from `.breadcrumbs/project.json` in the local repository. Every project-scoped Breadcrumbs MCP call must include the `project_id` from that file. If the file is missing, list accessible projects, ask the user whether to link this repository to an existing project or create a new one, then write `.breadcrumbs/project.json` after the user chooses.
+
+## Repo-Local Project Config
+
+The canonical local config path is:
+
+```text
+.breadcrumbs/project.json
+```
+
+The file is non-secret project metadata. It must be safe to commit unless the user prefers to keep local workspace metadata ignored.
+
+Expected shape:
+
+```json
+{
+  "project_id": "project-uuid",
+  "project_name": "Optional display name",
+  "app_url": "https://breadcrumbs.dev"
+}
+```
+
+Rules:
+
+- `project_id` is required and must be used in every project-scoped MCP call.
+- `project_name` is optional display metadata. Do not rely on it for identity.
+- `app_url` is optional display/setup metadata.
+- The file must never contain API keys, bearer tokens, Edstem tokens, passwords, cookies, private credentials, or other secrets.
+- If `.breadcrumbs/` does not exist and a project is selected or created, create the folder and then write `project.json`.
+- If the file exists but has invalid JSON, a missing `project_id`, or an inaccessible project, ask the user before overwriting it.
+- If the current repository clearly maps to a different project than the file says, stop and ask the user to confirm before changing the file.
+
+## Project Resolution Flow
+
+Before calling project-scoped Breadcrumbs tools:
+
+1. Look for `.breadcrumbs/project.json` from the current repository root.
+2. If present, parse it and extract `project_id`.
+3. Use that `project_id` in all project-scoped MCP calls.
+4. If missing, call `list_projects` to show projects the authenticated user can access.
+5. Ask the user whether to link this repository to an existing project or create a new project.
+6. If the user chooses an existing project, write `.breadcrumbs/project.json` with that project's UUID and name.
+7. If the user chooses a new project, call `create_project`, then write `.breadcrumbs/project.json` with the returned project UUID and name.
+8. After writing the file, continue using that UUID for all future project-scoped calls in this repository.
+
+Do not create a new Breadcrumbs project silently when accessible projects already exist unless the user's request clearly asks for a new project.
+
 ## Available MCP Tools
 
 Use the Breadcrumbs MCP tools when they are available:
+
+Project discovery tools:
+
+- `list_projects`: List projects the authenticated user can access, including project IDs, names, descriptions, and member roles. Use this when `.breadcrumbs/project.json` is missing, invalid, or points to an inaccessible project.
+- `create_project`: Create a new project owned by the authenticated user. Use only after the user chooses to create a new project, or when the request clearly requires one.
+
+Project-scoped tools:
 
 - `get_project_overview`: Get project name, description, board column counts, and documentation page titles.
 - `get_kanban_board`: Get full columns and cards, including card IDs, descriptions, and assignees.
@@ -38,7 +94,9 @@ Use the Breadcrumbs MCP tools when they are available:
 - `write_documentation`: Create or update a documentation page by title.
 - `delete_documentation`: Delete an obsolete documentation page by title. Use only when cleanup is explicitly requested or clearly part of the task.
 
-If the MCP tools are unavailable or fail, tell the user what could not be synced, then continue locally when practical. Do not invent card IDs, note IDs, documentation contents, plan IDs, verification IDs, or successful Breadcrumbs updates.
+Every project-scoped tool call must include the resolved `project_id`. If a tool returns a missing-project, nonexistent-project, or insufficient-access error, do not guess a replacement UUID. Re-run the Project Resolution Flow or ask the user.
+
+If the MCP tools are unavailable or fail, tell the user what could not be synced, then continue locally when practical. Do not invent project IDs, card IDs, note IDs, documentation contents, plan IDs, verification IDs, or successful Breadcrumbs updates.
 
 ## Plan And Verification Schema
 
@@ -92,17 +150,18 @@ Prefer concise titles and put command names, caveats, or expected evidence in `d
 
 At the start of feature work, build Breadcrumbs context before code changes:
 
-1. Call `get_project_overview` to learn the project, available columns, and documentation pages.
-2. Call `get_kanban_board` to inspect existing cards and collect card IDs.
-3. Match the requested work to an existing card by exact title, clear case-insensitive title match, or obvious description match.
-4. If multiple cards reasonably match, ask the user which card to use.
-5. If no relevant card exists, call `create_card` with a concise title, useful description, and the best starting column.
-6. Move the target card to `In Progress` or the closest active-work column with `update_card`, unless the user requested a different state.
-7. Call `get_card_details` for the target card.
-8. Call `set_card_plan` with a concrete implementation plan before editing code.
-9. Call `set_card_verification` with the checks you expect to run before completion.
-10. Call `log_activity` with a kickoff entry and relevant tags.
-11. Use `create_note` for acceptance criteria, notable constraints, or initial technical decisions that should stay attached to the card.
+1. Resolve the active project by reading `.breadcrumbs/project.json` or following the Project Resolution Flow.
+2. Call `get_project_overview` with the resolved `project_id` to learn the project, available columns, and documentation pages.
+3. Call `get_kanban_board` with the resolved `project_id` to inspect existing cards and collect card IDs.
+4. Match the requested work to an existing card by exact title, clear case-insensitive title match, or obvious description match.
+5. If multiple cards reasonably match, ask the user which card to use.
+6. If no relevant card exists, call `create_card` with the resolved `project_id`, a concise title, useful description, and the best starting column.
+7. Move the target card to `In Progress` or the closest active-work column with `update_card`, unless the user requested a different state.
+8. Call `get_card_details` with the resolved `project_id` for the target card.
+9. Call `set_card_plan` with the resolved `project_id` and a concrete implementation plan before editing code.
+10. Call `set_card_verification` with the resolved `project_id` and the checks you expect to run before completion.
+11. Call `log_activity` with the resolved `project_id`, a kickoff entry, and relevant tags.
+12. Use `create_note` with the resolved `project_id` for acceptance criteria, notable constraints, or initial technical decisions that should stay attached to the card.
 
 Keep kickoff logs short and concrete:
 
@@ -118,6 +177,7 @@ Good plan steps are concrete and verifiable:
 
 ```json
 {
+  "project_id": "project-uuid",
   "card_id": "card-uuid",
   "steps": [
     {
@@ -140,6 +200,7 @@ During work, update plan progress with `update_card_plan_steps`, preferably in b
 
 ```json
 {
+  "project_id": "project-uuid",
   "card_id": "card-uuid",
   "updates": [
     {
@@ -171,6 +232,7 @@ Example:
 
 ```json
 {
+  "project_id": "project-uuid",
   "card_id": "card-uuid",
   "checks": [
     {
@@ -193,6 +255,7 @@ After running checks, update results with `update_card_verification_checks`, pre
 
 ```json
 {
+  "project_id": "project-uuid",
   "card_id": "card-uuid",
   "updates": [
     {
@@ -225,6 +288,7 @@ Create card-attached notes with `create_note` and a `card_id`:
 
 ```json
 {
+  "project_id": "project-uuid",
   "title": "Review focus",
   "content": "Check migration behavior for existing cards and confirm note permissions.",
   "card_id": "card-uuid"
@@ -235,6 +299,7 @@ Create standalone project notes by omitting `card_id`:
 
 ```json
 {
+  "project_id": "project-uuid",
   "title": "Release caveat",
   "content": "Run the latest notes migration before deploying the MCP note tools."
 }
@@ -275,16 +340,17 @@ Never delete a card based only on a vague title match if multiple cards could re
 
 When continuing existing work:
 
-1. Call `get_project_overview` and `get_kanban_board`.
-2. Locate the current card. If the user names a card, prefer exact or obvious title matches.
-3. Call `get_card_details` to inspect the existing plan, verification checklist, unified notes, and versions.
-4. Move the card to an active column if work is resuming from `Backlog`, `Review`, or a paused state.
-5. If no plan exists and implementation work remains, call `set_card_plan`.
-6. If no verification checklist exists and verification will be needed, call `set_card_verification`.
-7. Mark the next active plan step as `doing` with `update_card_plan_steps`.
-8. Read relevant documentation pages with `read_documentation` when setup, API behavior, architecture, or prior decisions matter.
-9. Review relevant notes with `list_notes` or `get_note` when card context, project reminders, or handoff decisions matter.
-10. Log the restart only when the resumed work is substantial or changes the current plan.
+1. Resolve the active project by reading `.breadcrumbs/project.json` or following the Project Resolution Flow.
+2. Call `get_project_overview` and `get_kanban_board` with the resolved `project_id`.
+3. Locate the current card. If the user names a card, prefer exact or obvious title matches.
+4. Call `get_card_details` with the resolved `project_id` to inspect the existing plan, verification checklist, unified notes, and versions.
+5. Move the card to an active column if work is resuming from `Backlog`, `Review`, or a paused state.
+6. If no plan exists and implementation work remains, call `set_card_plan` with the resolved `project_id`.
+7. If no verification checklist exists and verification will be needed, call `set_card_verification` with the resolved `project_id`.
+8. Mark the next active plan step as `doing` with `update_card_plan_steps`.
+9. Read relevant documentation pages with `read_documentation` when setup, API behavior, architecture, or prior decisions matter.
+10. Review relevant notes with `list_notes` or `get_note` when card context, project reminders, or handoff decisions matter.
+11. Log the restart only when the resumed work is substantial or changes the current plan.
 
 ## During Work
 
@@ -307,11 +373,12 @@ Use Breadcrumbs documentation for knowledge that should outlive the current thre
 
 Follow this non-destructive edit protocol:
 
-1. Call `get_project_overview` to discover existing documentation titles.
-2. If the page may already exist, call `read_documentation` first.
-3. Merge or append the new information while preserving useful existing content.
-4. Call `write_documentation` with the complete updated page content.
-5. Use `delete_documentation` only for obsolete or duplicate pages when deletion is intentional.
+1. Resolve the active project and include `project_id` in every documentation tool call.
+2. Call `get_project_overview` to discover existing documentation titles.
+3. If the page may already exist, call `read_documentation` first.
+4. Merge or append the new information while preserving useful existing content.
+5. Call `write_documentation` with the complete updated page content.
+6. Use `delete_documentation` only for obsolete or duplicate pages when deletion is intentional.
 
 Never blindly overwrite an existing page with narrower content. Never store secrets, API keys, raw tokens, or private credentials in documentation.
 
@@ -325,6 +392,21 @@ Database & Migrations
 Deployment
 Notes
 ```
+
+
+## User-Scoped Auth And Attribution Rules
+
+Breadcrumbs MCP uses user-scoped API keys.
+
+- A `bcu_...` API key authenticates the user only.
+- The active project is never inferred from the API key.
+- Old project-scoped MCP keys must not be used for authentication.
+- Project access is enforced by Breadcrumbs RBAC on each project-scoped tool call.
+- Read tools require project view access.
+- Write and delete tools require project edit/admin access.
+- MCP-created cards, notes, documentation updates, and activity entries are attributed to the authenticated user API key by Breadcrumbs.
+
+If authentication fails, tell the user to create or check their user-scoped API key in Breadcrumbs Settings or the Welcome setup flow. Do not ask them to create a per-project API key.
 
 ## MCP Coverage And Implementation Flow
 
@@ -425,10 +507,10 @@ If the board uses different names, choose the closest semantic match and mention
 - Never delete a card or note unless deletion is explicitly requested or clearly correct cleanup.
 - Never mark work `Done` before verification unless the user explicitly requests that state.
 - Never invent card IDs, note IDs, plan step IDs, or verification check IDs.
-- Use IDs returned by `create_card`, `get_kanban_board`, `get_card_details`, `create_note`, `list_notes`, `set_card_plan`, `set_card_verification`, or `get_note`.
+- Use project IDs returned by `.breadcrumbs/project.json`, `list_projects`, or `create_project`; use card, note, plan, and verification IDs returned by `create_card`, `get_kanban_board`, `get_card_details`, `create_note`, `list_notes`, `set_card_plan`, `set_card_verification`, or `get_note`.
 - Never update plan or verification by list position.
 - Never partially retry a failed bulk update without first checking whether anything changed.
-- Never store secrets in `log_activity`, notes, plan notes, verification evidence, or documentation.
+- Never store secrets in `.breadcrumbs/project.json`, `log_activity`, notes, plan notes, verification evidence, or documentation.
 - Do not repeatedly retry failing MCP calls.
 - Do not delete documentation unless deletion is explicitly requested or clearly correct cleanup.
 - Keep Breadcrumbs updates useful for reconstructing the work later.
